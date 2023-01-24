@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Card Game</title>
+		<meta charset="utf-8">
+		<style>
+			* {
+				margin: 0px;
+			}
+
+			#crosshairContainer {
+				display: none;
+				position: absolute;
+				width: 100vw;
+				height: 100vh;
+				align-items: center;
+				justify-content: center;
+			}
+
+			#usernameView {
+				display: flex;
+				width: 100vw;
+				height: 100vh;
+				justify-content: center;
+				align-items: center;
+				z-index: 10;
+			}
+
+			#usernameInput {
+				padding: 15px;
+				border-radius: 5%;
+			}
+
+			#usernameButton {
+				padding: 15px;
+				border-radius: 5%;
+			}
+
+			#usernameButton:hover {
+				background: darkgray;
+			}
+		</style>
+  </head>
+  <body>
+		<div id='usernameView'>
+			<input id="usernameInput" type="text" placeholder="Username">
+			<button id="usernameButton">Join</button>
+		</div>
+		<div id="crosshairContainer">
+			<img id="crosshair" src="./src/crosshair.png" alt="">
+		</div>
+	</body>
+	<script src="/socket.io/socket.io.js"></script>
+	<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+	<script type="importmap">
+	  {
+	    "imports": {
+	      "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+				"GLTFLoader": "https://unpkg.com/three@0.148.0/examples/jsm/loaders/GLTFLoader.js",
+				"OrbitControls": "https://unpkg.com/three@0.148.0/examples/jsm/controls/OrbitControls.js",
+				"EffectComposer": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/EffectComposer.js",
+				"RenderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/RenderPass.js",
+				"MaskPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/MaskPass.js",
+				"ShaderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/ShaderPass.js",
+				"CopyShader": "https://unpkg.com/three@0.148.0/examples/jsm/shaders/CopyShader.js"
+	    }
+	  }
+	</script>
+	<script type="module" src="./pixelateShader.js"></script>
+	<script type="module" src="./app.js"></script>
+</html>
