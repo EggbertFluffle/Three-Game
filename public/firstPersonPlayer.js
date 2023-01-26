@@ -16,7 +16,8 @@ class FirstPersonPlayer{
 	}
 
 	update(deltaTime) {
-		this.changed = false;
+		this.positionChange = false;
+		this.rotationChange = false;
 		this.updateRotation();
 		this.updatePosition(deltaTime);
 		this.updateCamera();
@@ -34,7 +35,7 @@ class FirstPersonPlayer{
 		
 		if(forwardVelocity + strafeVelocity != 0) {
 			this.step += 0.1;
-			this.changed = true
+			this.positionChange = true;
 		}
 
 		const qx = new THREE.Quaternion();
@@ -57,7 +58,7 @@ class FirstPersonPlayer{
 		const yh = this.inputController.mouse.deltaY / window.innerHeight;
 
 		if(xh + yh != 0){
-			this.changed = true;
+			this.rotationChange = true;
 		}
 
 		this.phi += -xh * 5;
@@ -75,20 +76,24 @@ class FirstPersonPlayer{
 		this.rotation.copy(q);
 	}
 
-	getPlayerStatePacket(){
-		return {
-			position: {
+	getPlayerStatePacket(sendPosition = false, sendRotation = false){
+		let packet = {};
+		if(sendPosition){
+			packet.position = {
 				x: this.position.x,
 				y: this.position.y,
 				z: this.position.z
-			},
-			rotation: {
+			};
+		}
+		if(sendRotation) {
+			packet.rotation = {
 				x: this.rotation.x,
 				y: this.rotation.y,
 				z: this.rotation.z,
 				w: this.rotation.w
-			}
+			};
 		}
+		return packet;
 	}
 }
 

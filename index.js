@@ -16,38 +16,43 @@ server.listen(3000, () => {
 });
 
 let players = new Map();
+let updatedPlayerIds = [];
 let serverUpdateIntervalID = null;
 
 io.on('connection', (socket) => {
 	console.log(`user ${socket.id} connected`);
-	players.set(socket.id, new Player(socket.id));
-	if(!serverUpdateIntervalID) serverUpdateIntervalID = setInterval(updateServer, 50);
-
+	players.set(socket.id, new ServerSidePlayerStateManager(socket.id));
+	if(!serverUpdateIntervalID){
+		updateServer = updateServer.bind(this);
+		serverUpdateIntervalID = setInterval(updateServer, 50);
+	}
 	socket.on("usernamePacket", (username) => {
-		console.log(socket.id);
-		console.log(username);
 		players.get(socket.id).username = username;
-		console.log(players.get(socket.id));
 	});
 
 	socket.on("playerPacket", (p) => {
-		console.log(players);
 		players.get(socket.id).setTransform(p);
+		let quickPlayerState = { id: socket.id };
+		if(p.position) quickPlayerState.position = p.position;
+		if(p.rotaiton) quickPlayerState.rotaiton = p.rotation;
+		if(!updatedPlayerIds.includes(socket.id)) updatedPlayerIds.push(socket.id);
 	});
 
 	socket.on('disconnect', () => {
 		console.log(`user ${socket.id} diconnected`);
+		io.emit("playerDisconnect", socket.id);
 		players.delete(socket.id);
 	});
 });
 
-function updateServer(){
-	io.emit("serverUpdate", {
-		players: Array.from(players)
-	});
+let updateServer = () => {
+	let updatedPlayers = [];
+	updatedPlayerIds.forEach(id => updatedPlayers.push(players.get(id)));
+	io.emit("serverUpdate", updatedPlayers);
+	updatedPlayerIds = [];
 }
 
-class Player{
+class ServerSidePlayerStateManager{
 	constructor(id){
 		this.position = {
 			x: 0,
@@ -65,7 +70,7 @@ class Player{
 	}
 
 	setTransform({position, rotation}){
-		this.position = position;
-		this.rotation = rotation;
+		if(position) this.position = position;
+		if(rotation) this.rotation = rotation;
 	}
 }

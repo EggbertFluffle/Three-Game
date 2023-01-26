@@ -3,23 +3,19 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'GLTFLoader';
 import { FirstPersonPlayer } from './firstPersonPlayer.js';
 import { UserInterfaceController } from './userInterfaceController.js';
+import { ClientSidePlayerStateManager } from './clientSidePlayerStateManager.js';
 
 // Shader Imports
 import { EffectComposer } from "EffectComposer";
 import { RenderPass } from "RenderPass";
 import { ShaderPass } from "ShaderPass";
 import { PixelateShader } from "./pixelateShader.js";
-// import { CopyShader } from "CopyShader";
-// import { MaskPass } from "MaskPass";
 
 class Game{
 	constructor(){
 		this.animate = this.animate.bind(this);
 		this.clock = new THREE.Clock(true);
 		this.username = "";
-		this.previousPlayers = null;
-		this.players = new Map();
-		this.playerModels = [];
 
 		this.userInterfaceController = new UserInterfaceController();
 		this.setUsername = this.setUsername.bind(this);
@@ -31,9 +27,12 @@ class Game{
 		this.socket.emit("usernamePacket", this.username);
 
 		this.player = new FirstPersonPlayer(0, 1, 0, document.body);
+
+		this.otherPlayers = new Map();
+	
 		
 		this._initRendering();
-		this._preloadModels();
+		// this._preloadModels();
 		this._initScene();
 
 		this.windowResize();
@@ -41,6 +40,8 @@ class Game{
 
 		this.serverUpdateHandler = this.serverUpdateHandler.bind(this);
 		this.socket.on("serverUpdate", this.serverUpdateHandler);
+		this.playerDisconnectHandler = this.playerDisconnectHandler.bind(this);
+		this.socket.on("playerDisconnect", this.playerDisconnectHandler);
 	}
 
 	_initRendering() {
@@ -143,33 +144,32 @@ class Game{
 	}
 
 	serverUpdateHandler(packet) {
-		console.log(packet.players);
-		this.previousPlayers = this.players;
-		this.players = new Map();
-		for(let i = 0; i < packet.players.length; i++) {
-			if(packet.players[i][0] != this.socket.id) this.players.set(packet.players[i][0], packet.players[i][1]);
-		}
-		for(let i = 0; i < this.players.size; i++) {
-			if(!this.playerModels[i]){
-				this.playerModels[i] = new THREE.Mesh(
-					new THREE.BoxGeometry(0.5, 2, 0.5),
-					new THREE.MeshNormalMaterial()
-				);
-				this.scene.add(this.playerModels[i]);
+		for(let i = 0; i < packet.length; i++) {
+			if(packet[i].id == this.socket.id) return;
+			if(this.otherPlayers.has(packet[i].id)) {
+				this.otherPlayers.get(packet[i].id).setTransform(packet[i]);
+			} else {
+				this.otherPlayers.set(packet[i].id, new ClientSidePlayerStateManager(packet[i]));
+				this.scene.add(this.otherPlayers.get(packet[i].id).getModel());
 			}
-			let { position, rotation } = this.players.get(Array.from(this.players.keys())[i]);
-			this.playerModels[i].position.set(position.x, position.y, position.z);
 		}
+	}
+
+	sendPlayerStatePacket(){
+		if(this.player.positionChange || this.player.rotationChange) {
+			this.socket.emit("playerPacket", this.player.getPlayerStatePacket(this.player.positionChange, this.player.rotationChange));
+		}
+	}
+
+	playerDisconnectHandler(id){
+		this.players.delete(id);
 	}
 	
 	animate() {
 		requestAnimationFrame(this.animate);
 
 		this.player.update(this.clock.getDelta());
-		if(this.player.changed) {
-			console.count("Packet Sent!");
-			this.socket.emit("playerPacket", this.player.getPlayerStatePacket());
-		}
+		this.sendPlayerStatePacket();
 
 		this.postprocessing.composer.render(this.scene, this.player.camera || this.debugCamera);
 		// this.renderer.render(this.scene, this.player.camera || this.debugCamera);
