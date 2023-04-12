@@ -147,11 +147,18 @@ class Game{
 		for(let i = 0; i < packet.length; i++) {
 			if(packet[i].id == this.socket.id) return;
 			if(this.otherPlayers.has(packet[i].id)) {
-				this.otherPlayers.get(packet[i].id).setTransform(packet[i]);
+				// this.otherPlayers.get(packet[i].id).setTransform(packet[i]);
+				this.otherPlayers.get(packet[i].id).pushTransform(packet[i], this.clock.getElapsedTime());
 			} else {
 				this.otherPlayers.set(packet[i].id, new ClientSidePlayerStateManager(packet[i]));
 				this.scene.add(this.otherPlayers.get(packet[i].id).getModel());
 			}
+		}
+	}
+
+	updateOtherPlayersPositions(){
+		for(let [key, value] of this.otherPlayers) {
+			value.transformsQueueStep(this.clock.getDelta());
 		}
 	}
 
@@ -162,7 +169,7 @@ class Game{
 	}
 
 	playerDisconnectHandler(id){
-		this.players.delete(id);
+		this.otherPlayers.delete(id);
 	}
 	
 	animate() {
@@ -170,6 +177,7 @@ class Game{
 
 		this.player.update(this.clock.getDelta());
 		this.sendPlayerStatePacket();
+		this.updateOtherPlayersPositions();
 
 		this.postprocessing.composer.render(this.scene, this.player.camera || this.debugCamera);
 		// this.renderer.render(this.scene, this.player.camera || this.debugCamera);

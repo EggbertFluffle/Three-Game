@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
 	players.set(socket.id, new ServerSidePlayerStateManager(socket.id));
 	if(!serverUpdateIntervalID){
 		updateServer = updateServer.bind(this);
-		serverUpdateIntervalID = setInterval(updateServer, 50);
+		serverUpdateIntervalID = setInterval(updateServer, 250);
 	}
 	socket.on("usernamePacket", (username) => {
 		players.get(socket.id).username = username;
