@@ -8,7 +8,7 @@ const PixelateShader = {
 
     uniforms: {
         "tDiffuse": { value: null },
-        "intensity": {value:1}
+        "intensity": {value: 1}
     },
 
     vertexShader: [

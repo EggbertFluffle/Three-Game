@@ -13,6 +13,13 @@ class UserInterfaceController{
 			if(e.keyCode == 13) this.submitUsername();
 		});
 	}
+
+	addChat(chat  = "") {
+		let chatElement = document.createElement("p");
+		chatElement.innerText = chat ? chat : document.querySelector("#chatInput").value;
+		if(document.querySelector("#chatInput").value != "") document.querySelector("#chatInput").value = "";
+		documnet.querySelector("#chatContainer").appendChild(chatElement);
+	}
 }
 
 export { UserInterfaceController };

@@ -13,11 +13,13 @@ class FirstPersonPlayer{
 		this.phi = 0;
 		this.theta = 0;
 		this.step = 0;
+
+		this.physics = new CANNON.Body({ mass: 1 });
+		this.physics.position.set(0, 10, 0);
+		this.physics.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 1, 0.5)));
 	}
 
 	update(deltaTime) {
-		this.positionChange = false;
-		this.rotationChange = false;
 		this.updateRotation();
 		this.updatePosition(deltaTime);
 		this.updateCamera();
@@ -26,31 +28,36 @@ class FirstPersonPlayer{
 
 	updateCamera(){
 		this.camera.quaternion.copy(this.rotation);
-		this.camera.position.copy(new THREE.Vector3(this.position.x, this.position.y + (Math.sin(this.step) * 0.02) + (this.inputController.keys[16] ? -0.2 : 0), this.position.z));
+		let shiftOffset = (this.inputController.keys[16] ? -0.2 : 0);
+		let stepOffset = (Math.sin(this.step) * 0.02);
+		this.camera.position.copy(new THREE.Vector3(this.physics.position.x, this.physics.position.y + stepOffset + shiftOffset, this.physics.position.z));
+		console.log(this.camera.position);
 	}
 
 	updatePosition(deltaTime){
-		const forwardVelocity = (this.inputController.keys[87] ? 1 : 0) + (this.inputController.keys[83] ? -1 : 0);
-		const strafeVelocity = (this.inputController.keys[65] ? 1 : 0) + (this.inputController.keys[68] ? -1 : 0);
+		const dir = new THREE.Vector3(
+			(this.inputController.keys[65] ? 1 : 0) + (this.inputController.keys[68] ? -1 : 0),
+			0,
+			(this.inputController.keys[87] ? 1 : 0) + (this.inputController.keys[83] ? -1 : 0)
+		).normalize();
 		
-		if(forwardVelocity + strafeVelocity != 0) {
+		if(dir.z + dir.x != 0) {
 			this.step += 0.1;
-			this.positionChange = true;
 		}
 
-		const qx = new THREE.Quaternion();
-		qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
+		// const qx = new THREE.Quaternion();
+		// qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi);
 
-		const forward = new THREE.Vector3(0, 0, -1);
-		forward.applyQuaternion(qx);
-		forward.multiplyScalar(forwardVelocity * deltaTime * this.speed);
+		// const forward = new THREE.Vector3(0, 0, -1);
+		// forward.applyQuaternion(qx);
+		// forward.multiplyScalar(velocity.z * deltaTime * this.speed);
 
-		const left = new THREE.Vector3(-1, 0, 0);
-		left.applyQuaternion(qx);
-		left.multiplyScalar(strafeVelocity * deltaTime * this.speed);
+		// const left = new THREE.Vector3(-1, 0, 0);
+		// left.applyQuaternion(qx);
+		// left.multiplyScalar(velocity.x * deltaTime * this.speed);
 
-		this.position.add(forward);
-		this.position.add(left);
+		// this.position.add(forward);
+		// this.position.add(left);
 	}
 
 	updateRotation() {
@@ -74,26 +81,6 @@ class FirstPersonPlayer{
 		q.multiply(qz);
 
 		this.rotation.copy(q);
-	}
-
-	getPlayerStatePacket(sendPosition = false, sendRotation = false){
-		let packet = {};
-		if(sendPosition){
-			packet.position = {
-				x: this.position.x,
-				y: this.position.y,
-				z: this.position.z
-			};
-		}
-		if(sendRotation) {
-			packet.rotation = {
-				x: this.rotation.x,
-				y: this.rotation.y,
-				z: this.rotation.z,
-				w: this.rotation.w
-			};
-		}
-		return packet;
 	}
 }
 

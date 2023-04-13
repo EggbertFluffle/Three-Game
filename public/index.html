@@ -9,10 +9,12 @@
 			}
 
 			#crosshairContainer {
-				display: none;
+				display: flex;
 				position: absolute;
 				width: 100vw;
 				height: 100vh;
+				top: 0px;
+				left: 0px;
 				align-items: center;
 				justify-content: center;
 			}
@@ -26,14 +28,22 @@
 				z-index: 10;
 			}
 
+			#gameView {
+				display: none;
+				position: absolute;
+				width: 100vw;
+				height: 100vh;
+				z-index: 20;
+			}
+
 			#usernameInput {
 				padding: 15px;
-				border-radius: 5%;
+				border-radius: 1rem;
 			}
 
 			#usernameButton {
 				padding: 15px;
-				border-radius: 5%;
+				border-radius: 1rem;
 			}
 
 			#usernameButton:hover {
@@ -46,8 +56,14 @@
 			<input id="usernameInput" type="text" placeholder="Username">
 			<button id="usernameButton">Join</button>
 		</div>
-		<div id="crosshairContainer">
-			<img id="crosshair" src="./src/crosshair.png" alt="">
+		<div id="gameView">
+			<div id="crosshairContainer">
+				<img id="crosshair" src="./src/crosshair.png" alt="">
+			</div>
+			<div id="chatContainer">
+				<div id="chatLogContainer"></div>
+				<input id="chatInput" placeholder='Press "/" to chat'>
+			</div>
 		</div>
 	</body>
 	<script src="/socket.io/socket.io.js"></script>
@@ -55,17 +71,18 @@
 	<script type="importmap">
 	  {
 	    "imports": {
-	      "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
-				"GLTFLoader": "https://unpkg.com/three@0.148.0/examples/jsm/loaders/GLTFLoader.js",
-				"OrbitControls": "https://unpkg.com/three@0.148.0/examples/jsm/controls/OrbitControls.js",
-				"EffectComposer": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/EffectComposer.js",
-				"RenderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/RenderPass.js",
-				"MaskPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/MaskPass.js",
-				"ShaderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/ShaderPass.js",
-				"CopyShader": "https://unpkg.com/three@0.148.0/examples/jsm/shaders/CopyShader.js"
+	      	"three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+			"GLTFLoader": "https://unpkg.com/three@0.148.0/examples/jsm/loaders/GLTFLoader.js",
+			"OrbitControls": "https://unpkg.com/three@0.148.0/examples/jsm/controls/OrbitControls.js",
+			"EffectComposer": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/EffectComposer.js",
+			"RenderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/RenderPass.js",
+			"MaskPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/MaskPass.js",
+			"ShaderPass": "https://unpkg.com/three@0.148.0/examples/jsm/postprocessing/ShaderPass.js",
+			"CopyShader": "https://unpkg.com/three@0.148.0/examples/jsm/shaders/CopyShader.js"
 	    }
 	  }
 	</script>
 	<script type="module" src="./pixelateShader.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js" integrity="sha512-avLcnGxl5mqAX/wIKERdb1gFNkOLHh2W5JNCfJm5OugpEPBz7LNXJJ3BDjjwO00AxEY1MqdNjtEmiYhKC0ld7g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script type="module" src="./app.js"></script>
 </html>

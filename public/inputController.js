@@ -10,6 +10,7 @@ class InputController{
 			deltaX: 0,
 			deltaY: 0
 		}
+		this.lockedPointer = false;
 		this.previousMouse = null;
 		this.keys = {};
 		this.previousKeys = {};
@@ -21,7 +22,9 @@ class InputController{
 		if(pointerLock) {
 			element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock;
 			element.addEventListener("click", (e) => {
-				element.requestPointerLock();
+				element.requestPointerLock({
+			    unadjustedMovement: true
+			  });
 			})
 		}
 	}
@@ -56,8 +59,10 @@ class InputController{
 			this.previousMouse = {...this.mouse};
 		}
 
-		this.mouse.deltaX = e.movementX;
-		this.mouse.deltaY = e.movementY;
+		if(document.pointerLockElement != null) {
+			this.mouse.deltaX = e.movementX;
+			this.mouse.deltaY = e.movementY;
+		}
 	}
 	
 	onKeyDown(e) {
